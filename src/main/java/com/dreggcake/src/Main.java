@@ -1,14 +1,8 @@
 package com.dreggcake.src;
 
-// GLFW → window + input
 import org.lwjgl.glfw.GLFW;
-// prints GLFW errors to console
 import org.lwjgl.glfw.GLFWErrorCallback;
-
-// OpenGL bindings
 import org.lwjgl.opengl.*;
-
-// manual memory management (native buffers)
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
