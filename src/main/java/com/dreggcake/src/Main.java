@@ -144,10 +144,10 @@ public class Main {
                 """
                         #version 330 core
                             out vec4 FragColor;
-                            in vec4 vertexColor; // input variable from vs (same name and type)
+                            uniform vec4 ourColor; // we set this variable in OpenGL code.
                         void main()
                         {
-                            FragColor = vertexColor;
+                            FragColor = ourColor;
                         }
                         """;
 
@@ -185,6 +185,15 @@ public class Main {
 
             // activate shader program
             GL20.glUseProgram(shaderProgram);
+
+            // index/location of the uniform, we can update its values. Instead of passing a single color to the
+            // fragment shader, let’s spice things up by gradually changing color over time:
+
+            float timeValue = (float) GLFW.glfwGetTime();
+            float greenValue = (float) ((Math.sin(timeValue) / 2.0) + 0.5);
+
+            int vertexColorLocation = GL20.glGetUniformLocation(shaderProgram, "ourColor");
+            GL20.glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
 
             // bind VAO (restores all state)
             GL30.glBindVertexArray(VAO);
