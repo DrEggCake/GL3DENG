@@ -51,18 +51,15 @@ public class Main {
 
         // ======================= ALL OPENGL SETUP GOES BEFORE RENDER LOOP =======================
 
-        // rectangle vertices (4 points)
         float[] vertices = {
-                0.5f,  0.5f, 0.0f,   // top right
-                0.5f, -0.5f, 0.0f,   // bottom right
-                -0.5f, -0.5f, 0.0f,   // bottom left
-                -0.5f,  0.5f, 0.0f    // top left
+                0.0f, 0.5f, 0.0f,
+                -0.5f, -0.5f, 0.0f,
+                0.5f, -0.5f, 0.0f
         };
 
         // indices → tells GPU how to form triangles using above vertices
         int[] indices = {
-                0, 1, 3,  // triangle 1
-                1, 2, 3   // triangle 2
+                0, 1, 2
         };
 
         // VBO → stores vertex data in GPU memory
@@ -122,14 +119,15 @@ public class Main {
         // vertex shader (runs per vertex)
         String vertexShaderSource =
                 """
-                        #version 330 core
-                        layout (location = 0) in vec3 aPos; // input from VAO
-
-                        void main()
-                        {
-                            gl_Position = vec4(aPos, 1.0); // final position
-                        }
-                        """;
+                    #version 330 core
+                        layout (location = 0) in vec3 aPos; // position has attribute position 0
+                        out vec4 vertexColor; // specify a color output to the fragment shader
+                    void main()
+                    {
+                        gl_Position = vec4(aPos, 1.0); // we give a vec3 to vec4’s constructor
+                        vertexColor = vec4(0.5, 0.0, 0.0, 1.0); // output variable to dark-red
+                    }
+                    """;
 
         // create + compile vertex shader
         int vertexShader = GL20.glCreateShader(GL20.GL_VERTEX_SHADER);
@@ -145,11 +143,11 @@ public class Main {
         String fragmentShaderSource =
                 """
                         #version 330 core
-                        out vec4 FragColor; // output color
-
+                            out vec4 FragColor;
+                            in vec4 vertexColor; // input variable from vs (same name and type)
                         void main()
                         {
-                            FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f); // orange
+                            FragColor = vertexColor;
                         }
                         """;
 
