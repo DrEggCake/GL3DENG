@@ -1,5 +1,6 @@
 package com.dreggcake.src;
 
+import com.dreggcake.src.shaders.Shader;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.*;
@@ -7,6 +8,7 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.nio.file.Paths;
 
 public class Main {
 
@@ -52,9 +54,10 @@ public class Main {
         // ======================= ALL OPENGL SETUP GOES BEFORE RENDER LOOP =======================
 
         float[] vertices = {
-                0.0f, 0.5f, 0.0f,
-                -0.5f, -0.5f, 0.0f,
-                0.5f, -0.5f, 0.0f
+                // positions       // colors
+                0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom right
+                -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // bottom left
+                0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f // top
         };
 
         // indices → tells GPU how to form triangles using above vertices
@@ -95,17 +98,28 @@ public class Main {
         GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, indexBuffer, GL15.GL_STATIC_DRAW);
 
         // tell OpenGL how to interpret vertex data
-        GL20.glVertexAttribPointer(
-                0,                  // attribute location in shader (layout = 0)
-                3,                  // 3 floats per vertex (x,y,z)
-                GL11.GL_FLOAT,      // data type
-                false,              // normalize? no
-                3 * Float.BYTES,    // stride (size of one vertex)
-                0                   // offset
-        );
 
-        // enable attribute 0 (disabled by default)
+        // position attribute (location 0)
+        GL20.glVertexAttribPointer(
+                0,
+                3,
+                GL11.GL_FLOAT,
+                false,
+                6 * Float.BYTES,
+                0
+        );
         GL20.glEnableVertexAttribArray(0);
+
+        // color attribute (location 1)
+        GL20.glVertexAttribPointer(
+                1,
+                3,
+                GL11.GL_FLOAT,
+                false,
+                6 * Float.BYTES,
+                3 * Float.BYTES
+        );
+        GL20.glEnableVertexAttribArray(1);
 
         // unbind VAO (optional safety)
         GL30.glBindVertexArray(0);
@@ -114,64 +128,12 @@ public class Main {
         MemoryUtil.memFree(vertexBuffer);
         MemoryUtil.memFree(indexBuffer);
 
-        // ======================= SHADERS =======================
+        // SHADER
+        Shader shader = new Shader(
+                "shaders/shader.vs",
+                "shaders/shader.fs"
+        );
 
-        // vertex shader (runs per vertex)
-        String vertexShaderSource =
-                """
-                    #version 330 core
-                        layout (location = 0) in vec3 aPos; // position has attribute position 0
-                        out vec4 vertexColor; // specify a color output to the fragment shader
-                    void main()
-                    {
-                        gl_Position = vec4(aPos, 1.0); // we give a vec3 to vec4’s constructor
-                        vertexColor = vec4(0.5, 0.0, 0.0, 1.0); // output variable to dark-red
-                    }
-                    """;
-
-        // create + compile vertex shader
-        int vertexShader = GL20.glCreateShader(GL20.GL_VERTEX_SHADER);
-        GL20.glShaderSource(vertexShader, vertexShaderSource);
-        GL20.glCompileShader(vertexShader);
-
-        // check compile errors
-        if (GL20.glGetShaderi(vertexShader, GL20.GL_COMPILE_STATUS) == GL11.GL_FALSE) {
-            System.out.println(GL20.glGetShaderInfoLog(vertexShader));
-        }
-
-        // fragment shader (runs per pixel)
-        String fragmentShaderSource =
-                """
-                        #version 330 core
-                            out vec4 FragColor;
-                            uniform vec4 ourColor; // we set this variable in OpenGL code.
-                        void main()
-                        {
-                            FragColor = ourColor;
-                        }
-                        """;
-
-        int fragmentShader = GL20.glCreateShader(GL20.GL_FRAGMENT_SHADER);
-        GL20.glShaderSource(fragmentShader, fragmentShaderSource);
-        GL20.glCompileShader(fragmentShader);
-
-        if (GL20.glGetShaderi(fragmentShader, GL20.GL_COMPILE_STATUS) == GL11.GL_FALSE) {
-            System.out.println(GL20.glGetShaderInfoLog(fragmentShader));
-        }
-
-        // create shader program (links vertex + fragment)
-        int shaderProgram = GL20.glCreateProgram();
-        GL20.glAttachShader(shaderProgram, vertexShader);
-        GL20.glAttachShader(shaderProgram, fragmentShader);
-        GL20.glLinkProgram(shaderProgram);
-
-        if (GL20.glGetProgrami(shaderProgram, GL20.GL_LINK_STATUS) == GL11.GL_FALSE) {
-            System.out.println(GL20.glGetProgramInfoLog(shaderProgram));
-        }
-
-        // shaders no longer needed after linking
-        GL20.glDeleteShader(vertexShader);
-        GL20.glDeleteShader(fragmentShader);
 
         // ======================= RENDER LOOP =======================
         while (!GLFW.glfwWindowShouldClose(window)) {
@@ -184,24 +146,17 @@ public class Main {
             GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
 
             // activate shader program
-            GL20.glUseProgram(shaderProgram);
+            shader.use();
+            shader.setFloat("someUniform", 1.0f);
 
-            // index/location of the uniform, we can update its values. Instead of passing a single color to the
-            // fragment shader, let’s spice things up by gradually changing color over time:
-
-            float timeValue = (float) GLFW.glfwGetTime();
-            float greenValue = (float) ((Math.sin(timeValue) / 2.0) + 0.5);
-
-            int vertexColorLocation = GL20.glGetUniformLocation(shaderProgram, "ourColor");
-            GL20.glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
 
             // bind VAO (restores all state)
             GL30.glBindVertexArray(VAO);
 
-            // draw using indices (6 indices → 2 triangles)
+            // draw using indices ( not supposed to be here i believe according to book but idk how to fix it)
             GL11.glDrawElements(
                     GL11.GL_TRIANGLES,   // draw triangles
-                    6,                   // number of indices
+                    3,                   // number of indices
                     GL11.GL_UNSIGNED_INT,// type of indices
                     0                    // offset
             );
