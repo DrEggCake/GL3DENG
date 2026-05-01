@@ -4,14 +4,15 @@ import com.dreggcake.src.shaders.Shader;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.*;
+import org.lwjgl.stb.STBImage;
+import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 public class Main {
-
-    // continue from pg 58
 
     public static void main(String[] args) {
 
@@ -55,15 +56,17 @@ public class Main {
         // ======================= ALL OPENGL SETUP GOES BEFORE RENDER LOOP =======================
 
         float[] vertices = {
-                // positions       // colors
-                0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom right
-                -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // bottom left
-                0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f // top
+                // positions      // colors         // texture coords
+                0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top right
+                0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom right
+                -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom left
+                -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f // top left
         };
 
         // indices → tells GPU how to form triangles using above vertices
         int[] indices = {
-                0, 1, 2
+                0, 1, 3,
+                1, 2, 3
         };
 
         // VBO → stores vertex data in GPU memory
@@ -100,27 +103,19 @@ public class Main {
 
         // tell OpenGL how to interpret vertex data
 
-        // position attribute (location 0)
-        GL20.glVertexAttribPointer(
-                0,
-                3,
-                GL11.GL_FLOAT,
-                false,
-                6 * Float.BYTES,
-                0
-        );
+        int stride = 8 * Float.BYTES;
+
+        // position
+        GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, stride, 0);
         GL20.glEnableVertexAttribArray(0);
 
-        // color attribute (location 1)
-        GL20.glVertexAttribPointer(
-                1,
-                3,
-                GL11.GL_FLOAT,
-                false,
-                6 * Float.BYTES,
-                3 * Float.BYTES
-        );
+        // color
+        GL20.glVertexAttribPointer(1, 3, GL11.GL_FLOAT, false, stride, 3 * Float.BYTES);
         GL20.glEnableVertexAttribArray(1);
+
+        // texture coords
+        GL20.glVertexAttribPointer(2, 2, GL11.GL_FLOAT, false, stride, 6 * Float.BYTES);
+        GL20.glEnableVertexAttribArray(2);
 
         // unbind VAO (optional safety)
         GL30.glBindVertexArray(0);
@@ -134,6 +129,11 @@ public class Main {
                 "shaders/shader.vs",
                 "shaders/shader.fs"
         );
+
+        // =============== LOADING TEXTURES ==============
+
+        int texture1 = loadTexture("bricks.png");
+        int texture2 = loadTexture("awesomeFace.png");
 
 
         // ======================= RENDER LOOP =======================
@@ -150,14 +150,25 @@ public class Main {
             shader.use();
             shader.setFloat("someUniform", 1.0f);
 
+            GL20.glUniform1i(GL20.glGetUniformLocation(shader.ID, "texture1"),
+                    0); // GL_TEXTURE0
+            GL20.glUniform1i(GL20.glGetUniformLocation(shader.ID, "texture2"),
+                    1); // GL_TEXTURE1
+
+            GL30.glActiveTexture(GL13.GL_TEXTURE0);
+            GL30.glBindTexture(GL11.GL_TEXTURE_2D, texture1);
+
+            GL30.glActiveTexture(GL13.GL_TEXTURE1);
+            GL30.glBindTexture(GL11.GL_TEXTURE_2D, texture2);
 
             // bind VAO (restores all state)
             GL30.glBindVertexArray(VAO);
 
+
             // draw using indices ( not supposed to be here i believe according to book but idk how to fix it)
             GL11.glDrawElements(
                     GL11.GL_TRIANGLES,   // draw triangles
-                    3,                   // number of indices
+                    6,                   // number of indices
                     GL11.GL_UNSIGNED_INT,// type of indices
                     0                    // offset
             );
@@ -178,5 +189,61 @@ public class Main {
         if (GLFW.glfwGetKey(window, GLFW.GLFW_KEY_ESCAPE) == GLFW.GLFW_PRESS) {
             GLFW.glfwSetWindowShouldClose(window, true);
         }
+    }
+
+    private static int loadTexture(String fileName){
+
+        int texture = GL11.glGenTextures();
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture);
+
+
+        // wrapping
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT);
+
+        // filtering
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+
+        // load image
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+
+            IntBuffer width = stack.mallocInt(1);
+            IntBuffer height = stack.mallocInt(1);
+            IntBuffer channels = stack.mallocInt(1);
+
+            // flip image like LearnOpenGL expects
+            STBImage.stbi_set_flip_vertically_on_load(true);
+
+            ByteBuffer data = STBImage.stbi_load(fileName, width, height, channels, 0);
+
+            if (data != null) {
+
+                int format;
+
+                if (channels.get(0) == 3)
+                    format = GL11.GL_RGB;
+                else if (channels.get(0) == 4)
+                    format = GL11.GL_RGBA;
+                else
+                    throw new RuntimeException("Unsupported format");
+
+                GL11.glTexImage2D(
+                        GL11.GL_TEXTURE_2D,
+                        0,
+                        GL11.GL_RGB,
+                        width.get(0),
+                        height.get(0),
+                        0,
+                        format,
+                        GL11.GL_UNSIGNED_BYTE,
+                        data
+                );
+
+                GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
+            }
+            STBImage.stbi_image_free(data);
+        }
+        return texture;
     }
 }
