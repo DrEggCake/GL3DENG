@@ -8,9 +8,10 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.nio.file.Paths;
 
 public class Main {
+
+    // continue from pg 58
 
     public static void main(String[] args) {
 

@@ -3,8 +3,7 @@ package com.dreggcake.src.shaders;
 import org.lwjgl.opengl.GL20;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.InputStream;
 
 public class Shader {
 
@@ -16,12 +15,8 @@ public class Shader {
         String vertexCode = "";
         String fragmentCode = "";
 
-        try {
-            vertexCode = Files.readString(Paths.get(vertexPath));
-            fragmentCode = Files.readString(Paths.get(fragmentPath));
-        } catch (IOException e) {
-            System.out.println("ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ");
-        }
+            vertexCode = loadResource("/shaders/shader.vs");
+            fragmentCode = loadResource("/shaders/shader.fs");
 
         // 2. COMPILE SHADERS
         int vertex, fragment;
@@ -64,6 +59,17 @@ public class Shader {
         // DELETE SHADERS
         GL20.glDeleteShader(vertex);
         GL20.glDeleteShader(fragment);
+    }
+
+    private static String loadResource(String path) {
+        try (InputStream is = Shader.class.getResourceAsStream(path)) {
+            if (is == null) {
+                throw new RuntimeException("Resource not found: " + path);
+            }
+            return new String(is.readAllBytes());
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load resource: " + path, e);
+        }
     }
 
     // use()
