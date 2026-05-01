@@ -126,8 +126,8 @@ public class Main {
 
         // SHADER
         Shader shader = new Shader(
-                "shaders/shader.vs",
-                "shaders/shader.fs"
+                "/shaders/shader.vs",
+                "/shaders/shader.fs"
         );
 
         // =============== LOADING TEXTURES ==============
@@ -189,9 +189,19 @@ public class Main {
         if (GLFW.glfwGetKey(window, GLFW.GLFW_KEY_ESCAPE) == GLFW.GLFW_PRESS) {
             GLFW.glfwSetWindowShouldClose(window, true);
         }
+
+        if (GLFW.glfwGetKey(window, GLFW.GLFW_KEY_UP) == GLFW.GLFW_PRESS) {
+            GLFW.glfwSetWindowShouldClose(window, true);
+        }
+
+        if (GLFW.glfwGetKey(window, GLFW.GLFW_KEY_DOWN) == GLFW.GLFW_PRESS) {
+            GLFW.glfwSetWindowShouldClose(window, true);
+        }
+
+
     }
 
-    private static int loadTexture(String fileName){
+    private static int loadTexture(String fileName) {
 
         int texture = GL11.glGenTextures();
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture);

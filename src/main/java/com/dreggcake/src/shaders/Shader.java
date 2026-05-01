@@ -15,8 +15,8 @@ public class Shader {
         String vertexCode = "";
         String fragmentCode = "";
 
-            vertexCode = loadResource("/shaders/shader.vs");
-            fragmentCode = loadResource("/shaders/shader.fs");
+            vertexCode = loadResource(vertexPath);
+            fragmentCode = loadResource(fragmentPath);
 
         // 2. COMPILE SHADERS
         int vertex, fragment;
