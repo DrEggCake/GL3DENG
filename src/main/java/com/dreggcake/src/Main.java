@@ -1,6 +1,7 @@
 package com.dreggcake.src;
 
 import com.dreggcake.src.shaders.Shader;
+import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.*;
@@ -44,6 +45,7 @@ public class Main {
 
         // initialize OpenGL bindings (VERY IMPORTANT)
         GL.createCapabilities();
+//        GLFW.glfwSwapInterval(1); // this is vsync
 
         // define viewport (rendering area)
         GL11.glViewport(0, 0, 800, 600);
@@ -135,10 +137,10 @@ public class Main {
         int texture1 = loadTexture("bricks.png");
         int texture2 = loadTexture("awesomeFace.png");
 
+        FloatBuffer matrixBuffer = MemoryUtil.memAllocFloat(16);
 
         // ======================= RENDER LOOP =======================
         while (!GLFW.glfwWindowShouldClose(window)) {
-
             // handle input
             processInput(window);
 
@@ -160,6 +162,27 @@ public class Main {
 
             GL30.glActiveTexture(GL13.GL_TEXTURE1);
             GL30.glBindTexture(GL11.GL_TEXTURE_2D, texture2);
+
+
+            // create new transform EACH FRAME
+            Matrix4f trans = new Matrix4f();
+
+            // move to bottom-right
+
+            // rotate over time (GLFW time = seconds)
+            float time = (float) GLFW.glfwGetTime();
+            trans.translate(0.5f, -0.5f, 0.0f);
+            trans.rotate(time, 0.0f, 0.0f, 1.0f);
+
+
+            // get uniform location
+            int transformLoc = GL20.glGetUniformLocation(shader.ID, "transform");
+
+            // put matrix data into buffer
+            trans.get(matrixBuffer);
+
+            // send to shader
+            GL20.glUniformMatrix4fv(transformLoc, false, matrixBuffer);
 
             // bind VAO (restores all state)
             GL30.glBindVertexArray(VAO);
