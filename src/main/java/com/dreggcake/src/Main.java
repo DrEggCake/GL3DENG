@@ -2,6 +2,7 @@ package com.dreggcake.src;
 
 import com.dreggcake.src.shaders.Shader;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.*;
@@ -57,12 +58,48 @@ public class Main {
 
         // ======================= ALL OPENGL SETUP GOES BEFORE RENDER LOOP =======================
 
-        float[] vertices = {
-                // positions      // colors         // texture coords
-                0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top right
-                0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom right
-                -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom left
-                -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f // top left
+        float vertices[] = {
+                -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+                0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
+                0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+                0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+                -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+                -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+
+                -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+                0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+                0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+                0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+                -0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
+                -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+
+                -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+                -0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+                -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+                -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+                -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+                -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+
+                0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+                0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+                0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+                0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+                0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+                0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+
+                -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+                0.5f, -0.5f, -0.5f, 1.0f, 1.0f,
+                0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+                0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+                -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+                -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+
+                -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+                0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+                0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+                0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+                -0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
+                -0.5f, 0.5f, -0.5f, 0.0f, 1.0f
         };
 
         // indices → tells GPU how to form triangles using above vertices
@@ -75,7 +112,7 @@ public class Main {
         int VBO = GL15.glGenBuffers();
 
         // EBO → stores indices
-        int EBO = GL15.glGenBuffers();
+//        int EBO = GL15.glGenBuffers(); we dont need it for now
 
         // VAO → stores ALL configuration (VBO + attribute setup + EBO)
         int VAO = GL30.glGenVertexArrays();
@@ -93,38 +130,37 @@ public class Main {
         // send vertex data to GPU
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertexBuffer, GL15.GL_STATIC_DRAW);
 
-        // allocate memory for indices
-        IntBuffer indexBuffer = MemoryUtil.memAllocInt(indices.length);
-        indexBuffer.put(indices).flip();
-
-        // bind EBO (VERY IMPORTANT: must be while VAO is bound)
-        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, EBO);
-
-        // send indices to GPU
-        GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, indexBuffer, GL15.GL_STATIC_DRAW);
+//        // allocate memory for indices
+//        IntBuffer indexBuffer = MemoryUtil.memAllocInt(indices.length);
+//        indexBuffer.put(indices).flip();
+//
+//        // bind EBO (VERY IMPORTANT: must be while VAO is bound) // dont need this as well
+//        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, EBO);
+//
+//        // send indices to GPU
+//        GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, indexBuffer, GL15.GL_STATIC_DRAW);
 
         // tell OpenGL how to interpret vertex data
-
-        int stride = 8 * Float.BYTES;
+        int stride = 5 * Float.BYTES;
 
         // position
         GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, stride, 0);
         GL20.glEnableVertexAttribArray(0);
 
-        // color
-        GL20.glVertexAttribPointer(1, 3, GL11.GL_FLOAT, false, stride, 3 * Float.BYTES);
-        GL20.glEnableVertexAttribArray(1);
+//        // color
+//        GL20.glVertexAttribPointer(1, 2, GL11.GL_FLOAT, false, stride, 3 * Float.BYTES);
+//        GL20.glEnableVertexAttribArray(1); // we aint got no color data no more cuz of texture
 
         // texture coords
-        GL20.glVertexAttribPointer(2, 2, GL11.GL_FLOAT, false, stride, 6 * Float.BYTES);
-        GL20.glEnableVertexAttribArray(2);
+        GL20.glVertexAttribPointer(1, 2, GL11.GL_FLOAT, false, stride, 3 * Float.BYTES);
+        GL20.glEnableVertexAttribArray(1);
 
         // unbind VAO (optional safety)
         GL30.glBindVertexArray(0);
 
         // free CPU-side memory (GPU already has copy)
         MemoryUtil.memFree(vertexBuffer);
-        MemoryUtil.memFree(indexBuffer);
+//        MemoryUtil.memFree(indexBuffer);
 
         // SHADER
         Shader shader = new Shader(
@@ -145,6 +181,22 @@ public class Main {
         shader.setInt("texture1", 0);
         shader.setInt("texture2", 1);
 
+        GL11.glEnable(GL11.GL_DEPTH_TEST);
+
+
+        Vector3f[] cubePositions = {
+                new Vector3f(0.0f, 0.0f, 0.0f),
+                new Vector3f(2.0f, 5.0f, -15.0f),
+                new Vector3f(-1.5f, -2.2f, -2.5f),
+                new Vector3f(-3.8f, -2.0f, -12.3f),
+                new Vector3f(2.4f, -0.4f, -3.5f),
+                new Vector3f(-1.7f, 3.0f, -7.5f),
+                new Vector3f(1.3f, -2.0f, -2.5f),
+                new Vector3f(1.5f, 2.0f, -2.5f),
+                new Vector3f(1.5f, 0.2f, -1.5f),
+                new Vector3f(-1.3f, 1.0f, -1.5f)
+        };
+
         // ======================= RENDER LOOP =======================
         while (!GLFW.glfwWindowShouldClose(window)) {
             // handle input
@@ -152,24 +204,24 @@ public class Main {
 
             // clear screen (background color)
             GL11.glClearColor(0.2f, 0.1f, 0.3f, 1.0f);
-            GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
+            GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 
             // bind textures on corresponding texture units
-            GL30.glActiveTexture(GL13.GL_TEXTURE0);
-            GL30.glBindTexture(GL11.GL_TEXTURE_2D, texture1);
-            GL30.glActiveTexture(GL13.GL_TEXTURE1);
-            GL30.glBindTexture(GL11.GL_TEXTURE_2D, texture2);
+            GL13.glActiveTexture(GL13.GL_TEXTURE0);
+            GL13.glBindTexture(GL11.GL_TEXTURE_2D, texture1);
+            GL13.glActiveTexture(GL13.GL_TEXTURE1);
+            GL13.glBindTexture(GL11.GL_TEXTURE_2D, texture2);
 
             // activate shader
             shader.use();
 
-            Matrix4f model = new Matrix4f().rotate((float) Math.toRadians(-55.0f), 1.0f, 0.0f, 0.0f);
 
             Matrix4f view = new Matrix4f().translate(0.0f, 0.0f, -3.0f);
 
+
             Matrix4f projection = new Matrix4f()
-                    .perspective((float)Math.toRadians(45.0f),
-                            800.0f/600.0f,
+                    .perspective((float) Math.toRadians(45.0f),
+                            800.0f / 600.0f,
                             0.1f,
                             100.0f
                     );
@@ -178,10 +230,6 @@ public class Main {
             int viewLoc = GL20.glGetUniformLocation(shader.ID, "view");
             int projectionLoc = GL20.glGetUniformLocation(shader.ID, "projection");
 
-            // MODEL
-            matrixBuffer.clear();
-            model.get(matrixBuffer);
-            GL20.glUniformMatrix4fv(modelLoc, false, matrixBuffer);
 
             // VIEW
             matrixBuffer.clear();
@@ -194,19 +242,31 @@ public class Main {
             GL20.glUniformMatrix4fv(projectionLoc, false, matrixBuffer);
 
 
-
-
             // bind VAO (restores all state)
             GL30.glBindVertexArray(VAO);
 
 
-            // draw using indices ( not supposed to be here i believe according to book but idk how to fix it)
-            GL11.glDrawElements(
-                    GL11.GL_TRIANGLES,   // draw triangles
-                    6,                   // number of indices
-                    GL11.GL_UNSIGNED_INT,// type of indices
-                    0                    // offset
-            );
+            // draw without using indicies cuz we already defined it in long form ( idk ig?)
+
+            for (int i = 0; i < 10; i++) {
+
+                Matrix4f model = new Matrix4f()
+                        .translate(cubePositions[i]);
+
+                float angle = (float) Math.toRadians(20.0f * i);
+                model.rotate(angle, 1.0f, 0.3f, 0.5f);
+
+                matrixBuffer.clear();
+                model.get(matrixBuffer);
+
+                GL20.glUniformMatrix4fv(modelLoc, false, matrixBuffer);
+
+                GL11.glDrawArrays(
+                        GL11.GL_TRIANGLES,
+                        0,
+                        36
+                );
+            }
 
             // swap buffers (display result)
             GLFW.glfwSwapBuffers(window);
@@ -276,7 +336,7 @@ public class Main {
                 GL11.glTexImage2D(
                         GL11.GL_TEXTURE_2D,
                         0,
-                        GL11.GL_RGB,
+                        format,
                         width.get(0),
                         height.get(0),
                         0,
