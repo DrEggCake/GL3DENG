@@ -139,6 +139,12 @@ public class Main {
 
         FloatBuffer matrixBuffer = MemoryUtil.memAllocFloat(16);
 
+        // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
+        // -------------------------------------------------------------------------------------------
+        shader.use();
+        shader.setInt("texture1", 0);
+        shader.setInt("texture2", 1);
+
         // ======================= RENDER LOOP =======================
         while (!GLFW.glfwWindowShouldClose(window)) {
             // handle input
@@ -148,41 +154,47 @@ public class Main {
             GL11.glClearColor(0.2f, 0.1f, 0.3f, 1.0f);
             GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
 
-            // activate shader program
-            shader.use();
-            shader.setFloat("someUniform", 1.0f);
-
-            GL20.glUniform1i(GL20.glGetUniformLocation(shader.ID, "texture1"),
-                    0); // GL_TEXTURE0
-            GL20.glUniform1i(GL20.glGetUniformLocation(shader.ID, "texture2"),
-                    1); // GL_TEXTURE1
-
+            // bind textures on corresponding texture units
             GL30.glActiveTexture(GL13.GL_TEXTURE0);
             GL30.glBindTexture(GL11.GL_TEXTURE_2D, texture1);
-
             GL30.glActiveTexture(GL13.GL_TEXTURE1);
             GL30.glBindTexture(GL11.GL_TEXTURE_2D, texture2);
 
+            // activate shader
+            shader.use();
 
-            // create new transform EACH FRAME
-            Matrix4f trans = new Matrix4f();
+            Matrix4f model = new Matrix4f().rotate((float) Math.toRadians(-55.0f), 1.0f, 0.0f, 0.0f);
 
-            // move to bottom-right
+            Matrix4f view = new Matrix4f().translate(0.0f, 0.0f, -3.0f);
 
-            // rotate over time (GLFW time = seconds)
-            float time = (float) GLFW.glfwGetTime();
-            trans.translate(0.5f, -0.5f, 0.0f);
-            trans.rotate(time, 0.0f, 0.0f, 1.0f);
+            Matrix4f projection = new Matrix4f()
+                    .perspective((float)Math.toRadians(45.0f),
+                            800.0f/600.0f,
+                            0.1f,
+                            100.0f
+                    );
+
+            int modelLoc = GL20.glGetUniformLocation(shader.ID, "model");
+            int viewLoc = GL20.glGetUniformLocation(shader.ID, "view");
+            int projectionLoc = GL20.glGetUniformLocation(shader.ID, "projection");
+
+            // MODEL
+            matrixBuffer.clear();
+            model.get(matrixBuffer);
+            GL20.glUniformMatrix4fv(modelLoc, false, matrixBuffer);
+
+            // VIEW
+            matrixBuffer.clear();
+            view.get(matrixBuffer);
+            GL20.glUniformMatrix4fv(viewLoc, false, matrixBuffer);
+
+            // PROJECTION
+            matrixBuffer.clear();
+            projection.get(matrixBuffer);
+            GL20.glUniformMatrix4fv(projectionLoc, false, matrixBuffer);
 
 
-            // get uniform location
-            int transformLoc = GL20.glGetUniformLocation(shader.ID, "transform");
 
-            // put matrix data into buffer
-            trans.get(matrixBuffer);
-
-            // send to shader
-            GL20.glUniformMatrix4fv(transformLoc, false, matrixBuffer);
 
             // bind VAO (restores all state)
             GL30.glBindVertexArray(VAO);
