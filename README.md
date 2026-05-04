@@ -14,8 +14,105 @@ Mainly for:
 - translating examples from C++ to Java
 - tracking my progress
 
+Structure is currently minimal as I'm still building a understanding of the concepts.
+----
 
-no given structure yet as I do not have a mental model yet and enough knowledge about the concepts
+## Progress
+
+### 1. Introduction
+- [ ] Introduction  
+
+---
+
+### I. Getting Started
+- [ ] OpenGL  
+- [ ] Creating a Window  
+- [ ] Hello Window  
+- [ ] Hello Triangle  
+- [ ] Shaders  
+- [ ] Textures  
+- [ ] Transformations  
+- [ ] Coordinate Systems  
+- [ ] Camera  
+- [ ] Review  
+
+---
+
+### II. Lighting
+- [ ] Colors  
+- [ ] Basic Lighting  
+- [ ] Materials  
+- [ ] Lighting Maps  
+- [ ] Light Casters  
+- [ ] Multiple Lights  
+- [ ] Review  
+
+---
+
+### III. Model Loading
+- [ ] Assimp  
+- [ ] Mesh  
+- [ ] Model  
+
+---
+
+### IV. Advanced OpenGL
+- [ ] Depth Testing  
+- [ ] Stencil Testing  
+- [ ] Blending  
+- [ ] Face Culling  
+- [ ] Framebuffers  
+- [ ] Cubemaps  
+- [ ] Advanced Data  
+- [ ] Advanced GLSL  
+- [ ] Geometry Shader  
+- [ ] Instancing  
+- [ ] Anti-Aliasing  
+
+---
+
+### V. Advanced Lighting
+- [ ] Advanced Lighting  
+- [ ] Gamma Correction  
+- [ ] Shadow Mapping  
+- [ ] Point Shadows  
+- [ ] Normal Mapping  
+- [ ] Parallax Mapping  
+- [ ] HDR  
+- [ ] Bloom  
+- [ ] Deferred Shading  
+- [ ] SSAO  
+
+---
+
+### VI. PBR
+- [ ] Theory  
+- [ ] Lighting  
+- [ ] Diffuse Irradiance  
+- [ ] Specular IBL  
+
+---
+
+### VII. In Practice
+- [ ] Debugging  
+- [ ] Text Rendering  
+
+---
+
+### VIII. 2D Game (Breakout)
+- [ ] Breakout Overview  
+- [ ] Setting Up  
+- [ ] Rendering Sprites  
+- [ ] Levels  
+- [ ] Ball  
+- [ ] Collision Detection  
+- [ ] Collision Resolution  
+- [ ] Particles  
+- [ ] Postprocessing  
+- [ ] Powerups  
+- [ ] Audio  
+- [ ] Render Text  
+- [ ] Final Thoughts 
 
 ----
 
