@@ -20,19 +20,19 @@ Structure is currently minimal as I'm still building a understanding of the conc
 ## Progress
 
 ### 1. Introduction
-- [ ] Introduction  
+- [x] Introduction  
 
 ---
 
 ### I. Getting Started
-- [ ] OpenGL  
-- [ ] Creating a Window  
-- [ ] Hello Window  
-- [ ] Hello Triangle  
-- [ ] Shaders  
-- [ ] Textures  
-- [ ] Transformations  
-- [ ] Coordinate Systems  
+- [x] OpenGL  
+- [x] Creating a Window  
+- [x] Hello Window  
+- [x] Hello Triangle  
+- [x] Shaders  
+- [x] Textures  
+- [x] Transformations  
+- [x] Coordinate Systems  
 - [ ] Camera  
 - [ ] Review  
 
