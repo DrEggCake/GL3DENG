@@ -125,4 +125,4 @@ setup varies how its configured (maven or gradle)
 
 
 ## Disclaimer
-This is a purely learning project following LearnOpenGL book. Implementations are adopted from the original source.
+This is purely a learning project following LearnOpenGL book. Implementations are adapted from the original source.
