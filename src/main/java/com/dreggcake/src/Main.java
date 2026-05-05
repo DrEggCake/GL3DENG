@@ -16,6 +16,25 @@ import java.nio.IntBuffer;
 
 public class Main {
 
+    static Vector3f cameraPos = new Vector3f(0.0f, 0.0f, 3.0f);
+    static Vector3f cameraFront = new Vector3f(0.0f, 0.0f, -1.0f);
+    static Vector3f cameraUp = new Vector3f(0.0f, 1.0f, 0.0f);
+
+    static float deltaTime = 0.0f; // time b/w current frame and last frame
+    static float lastFrame = 0.0f; // time of last frame
+
+
+    // for mouse movement
+    static float lastX = 400, lastY = 300;
+    static boolean firstMouse = true;
+
+    static float yaw = -90.0f;
+    static float pitch = 0.0f;
+
+    static float sensitivity = 0.1f;
+
+    static float fov = 45.0f;
+
     public static void main(String[] args) {
 
         // optional but useful → prints GLFW errors
@@ -56,9 +75,15 @@ public class Main {
             GL11.glViewport(0, 0, width, height);
         });
 
+        // set mouse input
+        GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+        GLFW.glfwSetCursorPosCallback(window, Main::mouseCallback);
+
+        GLFW.glfwSetScrollCallback(window, Main::scroll_callback);
+
         // ======================= ALL OPENGL SETUP GOES BEFORE RENDER LOOP =======================
 
-        float vertices[] = {
+        float[] vertices = {
                 -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
                 0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
                 0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
@@ -199,6 +224,11 @@ public class Main {
 
         // ======================= RENDER LOOP =======================
         while (!GLFW.glfwWindowShouldClose(window)) {
+
+            float currentFrame = (float) GLFW.glfwGetTime();
+            deltaTime = currentFrame - lastFrame;
+            lastFrame = currentFrame;
+
             // handle input
             processInput(window);
 
@@ -215,12 +245,15 @@ public class Main {
             // activate shader
             shader.use();
 
-
-            Matrix4f view = new Matrix4f().translate(0.0f, 0.0f, -3.0f);
-
+            Matrix4f view = new Matrix4f()
+                    .lookAt(
+                            cameraPos,
+                            new Vector3f(cameraPos).add(cameraFront),
+                            cameraUp
+                    );
 
             Matrix4f projection = new Matrix4f()
-                    .perspective((float) Math.toRadians(45.0f),
+                    .perspective((float) Math.toRadians(fov),
                             800.0f / 600.0f,
                             0.1f,
                             100.0f
@@ -284,13 +317,23 @@ public class Main {
         if (GLFW.glfwGetKey(window, GLFW.GLFW_KEY_ESCAPE) == GLFW.GLFW_PRESS) {
             GLFW.glfwSetWindowShouldClose(window, true);
         }
-
-        if (GLFW.glfwGetKey(window, GLFW.GLFW_KEY_UP) == GLFW.GLFW_PRESS) {
-            GLFW.glfwSetWindowShouldClose(window, true);
+        float cameraSpeed = 2.5f * deltaTime; // adjust according to ur wish
+        if (GLFW.glfwGetKey(window, GLFW.GLFW_KEY_W) == GLFW.GLFW_PRESS) {
+            cameraPos.add(new Vector3f(cameraFront).mul(cameraSpeed));
         }
 
-        if (GLFW.glfwGetKey(window, GLFW.GLFW_KEY_DOWN) == GLFW.GLFW_PRESS) {
-            GLFW.glfwSetWindowShouldClose(window, true);
+        if (GLFW.glfwGetKey(window, GLFW.GLFW_KEY_S) == GLFW.GLFW_PRESS) {
+            cameraPos.sub(new Vector3f(cameraFront).mul(cameraSpeed));
+        }
+
+        if (GLFW.glfwGetKey(window, GLFW.GLFW_KEY_A) == GLFW.GLFW_PRESS) {
+            Vector3f right = new Vector3f(cameraFront).cross(cameraUp).normalize();
+            cameraPos.sub(right.mul(cameraSpeed));
+        }
+
+        if (GLFW.glfwGetKey(window, GLFW.GLFW_KEY_D) == GLFW.GLFW_PRESS) {
+            Vector3f right = new Vector3f(cameraFront).cross(cameraUp).normalize();
+            cameraPos.add(right.mul(cameraSpeed));
         }
 
 
@@ -350,5 +393,50 @@ public class Main {
             STBImage.stbi_image_free(data);
         }
         return texture;
+    }
+
+    public static void mouseCallback(long window, double xpos, double ypos) {
+
+        float x = (float) xpos;
+        float y = (float) ypos;
+
+        if (firstMouse) {
+            lastX = x;
+            lastY = y;
+            firstMouse = false;
+        }
+
+        float xoffset = x - lastX;
+        float yoffset = lastY - y; // reversed since y-coordinates go bottom to top
+
+        lastX = x;
+        lastY = y;
+
+        xoffset *= sensitivity;
+        yoffset *= sensitivity;
+
+        yaw += xoffset;
+        pitch += yoffset;
+
+        // constrain pitch
+        if (pitch > 89.0f) pitch = 89.0f;
+        if (pitch < -89.0f) pitch = -89.0f;
+
+        Vector3f front = new Vector3f();
+        front.x = (float) Math.cos(Math.toRadians(yaw)) * (float) Math.cos(Math.toRadians(pitch));
+        front.y = (float) Math.sin(Math.toRadians(pitch));
+        front.z = (float) Math.sin(Math.toRadians(yaw)) * (float) Math.cos(Math.toRadians(pitch));
+
+        cameraFront = front.normalize();
+    }
+
+    // glfw: whenever the mouse scroll wheel scrolls, this callback is called
+    // ----------------------------------------------------------------------
+    public static void scroll_callback(long window, double xoffset, double yoffset) {
+        fov -= (float) yoffset;
+        if (fov < 1.0f)
+            fov = 1.0f;
+        if (fov > 45.0f)
+            fov = 45.0f;
     }
 }
