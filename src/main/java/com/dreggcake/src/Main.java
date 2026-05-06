@@ -25,8 +25,6 @@ public class Main {
     static float lastX = 400, lastY = 300;
     static boolean firstMouse = true;
 
-    static float fov = 45.0f;
-
     public static void main(String[] args) {
 
         // optional but useful → prints GLFW errors
