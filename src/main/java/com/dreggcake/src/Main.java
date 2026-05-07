@@ -179,8 +179,8 @@ public class Main {
 
         // SHADER
         Shader shader = new Shader(
-                "/shaders/shader.vs",
-                "/shaders/shader.fs"
+                "/shaders/shader.vert",
+                "/shaders/shader.frag"
         );
 
         // =============== LOADING TEXTURES ==============
