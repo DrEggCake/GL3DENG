@@ -80,12 +80,13 @@ public class Camera {
         float velocity = movementSpeed * deltaTime;
 
         if (direction.equals("FORWARD")) {
-            position.add(new Vector3f(front).mul(velocity));
-            position.y = 0.0f;
+            Vector3f xzVector = new Vector3f(front.x, 0.0f, front.z);
+            position.add(new Vector3f(xzVector).mul(velocity));
         }
 
         if (direction.equals("BACKWARD")) {
-            position.sub(new Vector3f(front).mul(velocity));
+            Vector3f xzVector = new Vector3f(front.x, 0.0f, front.z);
+            position.sub(new Vector3f(xzVector).mul(velocity));
         }
 
         if (direction.equals("LEFT")) {
