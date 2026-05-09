@@ -198,19 +198,22 @@ public class Main {
 
         GL11.glEnable(GL11.GL_DEPTH_TEST);
 
+        Vector3f[] cubePositions = new Vector3f[10201];
 
-        Vector3f[] cubePositions = {
-                new Vector3f(0.0f, 0.0f, 0.0f),
-                new Vector3f(2.0f, 5.0f, -15.0f),
-                new Vector3f(-1.5f, -2.2f, -2.5f),
-                new Vector3f(-3.8f, -2.0f, -12.3f),
-                new Vector3f(2.4f, -0.4f, -3.5f),
-                new Vector3f(-1.7f, 3.0f, -7.5f),
-                new Vector3f(1.3f, -2.0f, -2.5f),
-                new Vector3f(1.5f, 2.0f, -2.5f),
-                new Vector3f(1.5f, 0.2f, -1.5f),
-                new Vector3f(-1.3f, 1.0f, -1.5f)
-        };
+        int index = 0;
+
+        for (int x = 0; x < Math.sqrt(cubePositions.length); x++) {
+            for (int z = 0; z < Math.sqrt(cubePositions.length); z++) {
+
+                cubePositions[index] = new Vector3f(
+                        x * 1.0f,
+                        -1.0f,
+                        z * 1.0f
+                );
+
+                index++;
+            }
+        }
 
         // ======================= RENDER LOOP =======================
         while (!GLFW.glfwWindowShouldClose(window)) {
@@ -239,7 +242,7 @@ public class Main {
 
             Matrix4f projection = new Matrix4f()
                     .perspective((float) Math.toRadians(camera.zoom),
-                            800.0f/600.0f,
+                            800.0f / 600.0f,
                             0.1f,
                             100.0f);
 
@@ -265,13 +268,10 @@ public class Main {
 
             // draw without using indicies cuz we already defined it in long form ( idk ig?)
 
-            for (int i = 0; i < 10; i++) {
+            for (Vector3f cubePosition : cubePositions) {
 
                 Matrix4f model = new Matrix4f()
-                        .translate(cubePositions[i]);
-
-                float angle = (float) Math.toRadians(20.0f * i);
-                model.rotate(angle, 1.0f, 0.3f, 0.5f);
+                        .translate(cubePosition);
 
                 matrixBuffer.clear();
                 model.get(matrixBuffer);
@@ -301,7 +301,6 @@ public class Main {
         if (GLFW.glfwGetKey(window, GLFW.GLFW_KEY_ESCAPE) == GLFW.GLFW_PRESS) {
             GLFW.glfwSetWindowShouldClose(window, true);
         }
-        float cameraSpeed = 2.5f * deltaTime; // adjust according to ur wish
         if (GLFW.glfwGetKey(window, GLFW.GLFW_KEY_W) == GLFW.GLFW_PRESS)
             camera.processKeyboard("FORWARD", deltaTime);
 
@@ -392,6 +391,7 @@ public class Main {
 
         camera.processMouseMovement(xoffset, yoffset);
     }
+
     // glfw: whenever the mouse scroll wheel scrolls, this callback is called
     // ----------------------------------------------------------------------
     public static void scroll_callback(long window, double xoffset, double yoffset) {
