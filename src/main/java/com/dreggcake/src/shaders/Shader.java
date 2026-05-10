@@ -1,9 +1,12 @@
 package com.dreggcake.src.shaders;
 
+import org.joml.Vector3f;
 import org.lwjgl.opengl.GL20;
+import org.lwjgl.system.MemoryUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.FloatBuffer;
 
 public class Shader {
 
@@ -90,5 +93,12 @@ public class Shader {
     // setFloat
     public void setFloat(String name, float value) {
         GL20.glUniform1f(GL20.glGetUniformLocation(ID, name), value);
+    }
+
+    public void setVec3(String name, Vector3f value){
+        GL20.glUniform3f(GL20.glGetUniformLocation(ID, name),
+                value.x,
+                value.y,
+                value.z);
     }
 }
